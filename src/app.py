@@ -94,7 +94,13 @@ def add_people_favorite(people_id):
     db.session.commit()
     return jsonify({"message": "People added to favorites successfully"}), 201
 
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_planet_favorite(planet_id):
+    return Favorite.delete_favorite(planet_id)
 
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def delete_people_favorite(people_id):
+    return Favorite.delete_favorite(people_id)
 
 
 

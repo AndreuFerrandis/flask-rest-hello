@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask import jsonify
 
 db = SQLAlchemy()
 
@@ -42,22 +43,24 @@ class People(db.Model):
 
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=True)
-    planet_name = db.Column(db.Integer, db.ForeignKey('planet.name'), nullable=True)
-    people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
-    people_name = db.Column(db.Integer, db.ForeignKey('people.name'), nullable=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    planet_id = db.Column(db.Integer, nullable=True)
+    people_id = db.Column(db.Integer,  nullable=True)
+    
 
     def serialize(self):
         return {
             "id": self.id,
             "planet_id": self.planet_id,
-            "planet_name": self.planet_name,
             "people_id": self.people_id,
-            "people_name": self.people_name,
             # do not serialize the password, its a security breach
         }
     
-    user = db.relationship('User', backref=db.backref('favorites', lazy=True))
-    planet = db.relationship('Planet', backref=db.backref('favorites_planets', lazy=True))
-    people = db.relationship('People', backref=db.backref('favorites_people', lazy=True))
+    @classmethod
+    def delete_favorite(cls, favorite_id):
+        favorite = cls.query.get(favorite_id)
+        if favorite is None:
+            return jsonify({"message": "Favorite not found"}), 404
+        db.session.delete(favorite)
+        db.session.commit()
+        return jsonify({"message": "Favorite removed successfully"}), 200
